@@ -10,10 +10,11 @@ import deleted from'./routes/delete/delete.routes'
 import update from './routes/put/put.routes'
 
 const app=express();
+const port = config.serverport 
 
 
 //Settings
-app.set ("port", config.serverport );
+app.set ("port", port );
 
 //Middlewares
 app.use(morgan("dev"));
