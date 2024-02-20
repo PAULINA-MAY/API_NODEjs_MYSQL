@@ -9,12 +9,12 @@ import post from './routes/post/post.routes'
 import deleted from'./routes/delete/delete.routes'
 import update from './routes/put/put.routes'
 
-coconfig.serverport nst app=express();
-const port = 
+const app=express();
+
 
 
 //Settings
-app.set ("port", port );
+app.set ("port", config.serverport  );
 
 //Middlewares
 app.use(morgan("dev"));
