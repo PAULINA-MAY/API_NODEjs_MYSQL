@@ -9,8 +9,8 @@ import post from './routes/post/post.routes'
 import deleted from'./routes/delete/delete.routes'
 import update from './routes/put/put.routes'
 
-const app=express();
-const port = config.serverport 
+coconfig.serverport nst app=express();
+const port = 
 
 
 //Settings
