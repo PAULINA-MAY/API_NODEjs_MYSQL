@@ -12,7 +12,7 @@ const  registerUser = async (req,res) =>{
         const connection = await getConnection();
         const passwordHash = await encrypt(password)
         if(!rol){
-            const dir = config.host+':'+app.get("port")+'/defaultprofile/'
+            const dir = config.serverport+':'+app.get("port")+'/defaultprofile/'
       
             const newUser = {
                 FullName_user: name,
@@ -24,6 +24,7 @@ const  registerUser = async (req,res) =>{
             };
             console.log(newUser)
             const inserted = await connection.query('INSERT INTO user SET ?', newUser);
+          
             res.send({
                 data : inserted,
                 message : 'The user has been inserted',

@@ -3,6 +3,7 @@ import { getConnection } from "../../database/database"
 import config from '../../config'
 import app from "../../app";
 import {sendEmail} from "../../helpers/sendEmail"
+const cloudinary = require("../utils/cloudinary");
 
 const postArtById = async (req, res) => {
 
@@ -57,26 +58,36 @@ const uploadImageFile = async (req, res) => {
         const id = req.params.id
         const connection = await getConnection();
         const exist = await connection.query('SELECT * FROM user WHERE Id_user = ?', [id])
-        if (!exist) {
+        if (exist.length === 0) {
 
             return res.status(409).json({ message: 'the user does not exist' })
         } else {
+             const urlImage = await cloudinary.uploader.upload(image.path)
+             if(!urlImage){
+                  res.status(500).json({
+                    message : 'cannot upload the image in the cloudinary'
+                  })
+                  console.log(urlImage.url)
+             }else{
+                const updated = await connection.query('UPDATE user SET ImgProfile_user = ?  WHERE  Id_user = ?', [urlImage.url, id]);
+                if (updated.length === 0) {
+                    return res.status(409).json({ message: 'The  imageProfile has not been updated' })
+    
+                } else {
+                    console.log(updated)
+                    res.send({
+                        data: updated,
+                        message: 'The ImageProfile has been updated',
+                        succes: true,
+                        status: 200
+    
+                    })
+    
+                }
 
-            const updated = await connection.query('UPDATE user SET ImgProfile_user = ?  WHERE  Id_user = ?', [image.filename, id]);
-            if (!updated) {
-                return res.status(409).json({ message: 'The  imageProfile has not been updated' })
-
-            } else {
-                console.log(updated)
-                res.send({
-                    data: updated,
-                    message: 'The ImageProfile has been updated',
-                    succes: true,
-                    status: 200
-
-                })
-
-            }
+             }
+             
+          
 
         }
 

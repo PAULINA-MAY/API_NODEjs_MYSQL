@@ -2,9 +2,9 @@ const multer = require('multer')
 /* const sharp = require('sharp') */
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
+/*     destination: (req, file, cb) => {
         cb(null, 'C:/Home/API-PROYECTO/src/images')
-    },
+    }, */
     filename: (req, file, cb) => {
         const ext = file.originalname.split('.').pop()
   
