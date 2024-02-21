@@ -7,7 +7,7 @@ const checkAuth = require('../../middleware/checkAuth')
 const router = Router();
 
 //ROUTES USER
-router.post("/uploadImage/:id",checkAuth,upload.single('file'), postMethods.uploadImageFile);
+router.post("/uploadImage/:id",checkAuth/* ,upload.single('file') */, postMethods.uploadImageFile);
 //ROUTES ADRESS
 router.post("/postadress/:id",checkAuth, postMethods.postAdressById)
 //ROUTES ART

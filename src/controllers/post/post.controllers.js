@@ -54,7 +54,7 @@ const postArtById = async (req, res) => {
 }
 const uploadImageFile = async (req, res) => {
     try {
-        const image = req.file
+        const image = req.file.path
         const id = req.params.id
         const connection = await getConnection();
         const exist = await connection.query('SELECT * FROM user WHERE Id_user = ?', [id])
@@ -62,7 +62,7 @@ const uploadImageFile = async (req, res) => {
 
             return res.status(409).json({ message: 'the user does not exist' })
         } else {
-             const urlImage = await cloudinary.uploader.upload(image.path)
+             const urlImage = await cloudinary.uploader.upload(image)
              if(!urlImage){
                   res.status(500).json({
                     message : 'cannot upload the image in the cloudinary'
