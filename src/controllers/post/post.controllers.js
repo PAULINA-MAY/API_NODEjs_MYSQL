@@ -3,7 +3,7 @@ import { getConnection } from "../../database/database"
 import config from '../../config'
 import app from "../../app";
 import {sendEmail} from "../../helpers/sendEmail"
-const cloudinary = require("../utils/cloudinary");
+const cloudinary = require("../../cloudinary");
 
 const postArtById = async (req, res) => {
 
