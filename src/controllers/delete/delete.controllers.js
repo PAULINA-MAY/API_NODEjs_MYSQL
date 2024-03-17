@@ -113,8 +113,9 @@ const deleteShoppingCartById = async (req, res) => {
                return res.status(404).json({ success: false, message: 'No data found for the specified purchase', status: 404 });
            }else{
               // Obtener el ID del artículo que se está eliminando
-              const idArt = purchase.Id_artFK;
-              
+              const idArt = purchase[0].Id_artFK;
+
+              console.log(idArt )
            // Incrementar el stock del artículo eliminado
            await connection.query('UPDATE art SET Stock = Stock + 1 WHERE Id_Art = ?', [idArt]);
    
@@ -124,7 +125,7 @@ const deleteShoppingCartById = async (req, res) => {
               return res.status(404).json({ success: false, message: 'The purchase has not been deleted', status: 404 });
 
            }else{
-              return res.status(200).json({ success: false, message: 'The purchase has been deleted', status: 404 });
+              return res.status(200).json({ success: true, message: 'The purchase has been deleted', status: 200 });
            }
            }
    

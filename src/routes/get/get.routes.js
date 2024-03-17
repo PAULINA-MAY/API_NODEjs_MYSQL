@@ -11,8 +11,10 @@ router.get("/getUsers", checkAuth, getMethods.getUsers)
 router.get("/getAdressUserById/:id", checkAuth, getMethods.getAdressUseById)
 
 //ROUTES ART
-//ENDPOINT PARA  OBTENER LAS PINTURAS QUE YA AGREGO EL USUARIO(ARTISTA) A LA PLATORMA
+//ENDPOINT PARA  OBTENER LAS PINTURAS QUE YA AGREGO EL USUARIO A LA PLATORMA
 router.get("/getArtByIdUser/:id", checkAuth, getMethods.getArtByIdUser)
+//ENDPOINT PARA  OBTENER EL ARTE POR MEDIO DE SU ID
+router.get("/getArtById/:id",  checkAuth, getMethods.getArtById)
 
 //ENDPOINT PARA  OBTENER TODAS LAS PINTURAS
 router.get("/getAllArts/", checkAuth, getMethods.getAllArts)

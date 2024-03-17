@@ -6,52 +6,49 @@ import {sendEmail} from "../../helpers/sendEmail"
 const cloudinary = require("../../cloudinary");
 
 const postArtById = async (req, res) => {
-
     try {
-        const id = req.params.id
-        const image = req.file
-        const { descripcion, precio, Categoria,cantidad } = req.body
-        const connection = await getConnection()
-        const exist = await connection.query('SELECT * FROM  user WHERE Id_user = ?', [id])
-        if (exist.length === 0) {
-            return res.status(409).json({ message: "The user does not exist" })
-
-        } else {
-
-            const dir = config.host + ':' + app.get("port") + '/public/'
-
-            const newArt = {
-                Id_userFK: id,
-                Descr_Art: descripcion,
-                Price_Art: precio,
-                Category_Art: Categoria,
-                Stock: cantidad,
-                Img_Art: dir + image.filename,
-
-
-
-            }
-
-            console.log(newArt)
-
-            const data = await connection.query('INSERT   INTO  art  SET ?', newArt)
-
-            res.send({
-                data: data,
-                success: true,
-                status: 200
-            })
+        const id = req.params.id;
+        const image = req.file;
+        const { titulo, descripcion, precio, Categoria, cantidad } = req.body;
+        const connection = await getConnection();
+        
+        // Verificar si ya existe un artículo con el mismo título
+        const existingArt = await connection.query('SELECT * FROM art WHERE Title_Art = ?', [titulo]);
+        if (existingArt.length > 0) {
+            return res.status(409).json({ message: "El artículo ya existe" });
         }
 
+        // Verificar si el usuario existe
+        const user = await connection.query('SELECT * FROM user WHERE Id_user = ?', [id]);
+        if (user.length === 0) {
+            return res.status(409).json({ message: "El usuario no existe" });
+        }
+
+        // Cargar la imagen del artículo en Cloudinary
+        const urlImage = await cloudinary.uploader.upload(image.path);
+        
+        const newArt = {
+            Id_userFK: id,
+            Title_Art: titulo,
+            Descr_Art: descripcion,
+            Price_Art: precio,
+            Category_Art: Categoria,
+            Stock: cantidad,
+            Img_Art: urlImage.url,
+        };
+
+        // Insertar el nuevo artículo en la base de datos
+        const data = await connection.query('INSERT INTO art SET ?', newArt);
+
+        res.status(200).send({
+            data: data,
+            success: true
+        });
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: 'Internal Server Error' })
+        console.error(error);
+        res.status(500).json({ message: 'Error interno del servidor' });
     }
-
-
-
-
-}
+};
 const uploadImageFile = async (req, res) => {
     try {
         const image = req.file

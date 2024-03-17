@@ -23,4 +23,22 @@ const validateCreate = [
 
 ]
 
-module.exports = { validateCreate}
+const validateLogin = [
+    check('email')
+        .exists()
+        .not()
+        .isEmpty()
+        .isEmail(),
+    check('password')
+        .exists()
+        .not()
+        .isEmpty(),
+    (req, res, next) => {
+        validateResults(req, res, next)
+    }
+
+]
+
+
+
+module.exports = { validateCreate, validateLogin}

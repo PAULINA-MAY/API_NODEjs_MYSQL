@@ -107,6 +107,33 @@ const getAdressUseById = async (req,res)=>{
    }
 } 
 
+const getArtById = async (req, res) =>{
+  try {
+    const id = req.params.id
+    const connection = await getConnection()
+    const data = await connection.query('SELECT Title_Art AS Titulo, Descr_Art AS Descripcion, Price_Art AS Precio, Img_Art AS Imagen FROM art WHERE Id_Art = ?', [id])
+    if (data.length===0) {
+      res.status(409).send({
+        success: false,
+        message: 'No data found for the specified ART'})
+      
+    }else{
+      res.send({
+        data : data,
+        success : true,
+        status : 200
+      })
+
+    } 
+
+
+    
+  } catch (error) {
+    
+  }
+
+}
+
 
 const  getAllArts= async (req,res) =>{
   try {
@@ -168,6 +195,7 @@ const getAllShoppingCartPurchase = async (req, res) =>{
     const connection = await getConnection();
     const data = await connection.query(`
         SELECT 
+            s.Id_cart AS Id_Carrito,
             s.Id_userFK AS Id_usuario, 
             u.FullName_user AS Nombre_usuario, 
             a.Id_Art AS Id_producto,
@@ -209,7 +237,8 @@ export const getMethods={
     getArtByIdUser,
     getAllArts,
     getFavoritesByUserId,
-    getAllShoppingCartPurchase
+    getAllShoppingCartPurchase,
+    getArtById 
 
 
 }

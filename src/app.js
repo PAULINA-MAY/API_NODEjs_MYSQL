@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import config from './config'
+var cors = require('cors')
 
 //ROUTES
 import auth from './routes/auth/auth.routes'
@@ -10,8 +11,7 @@ import deleted from'./routes/delete/delete.routes'
 import update from './routes/put/put.routes'
 
 const app=express();
-
-
+app.use(cors())
 
 //Settings
 app.set ("port", config.serverport  );
