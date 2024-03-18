@@ -196,13 +196,12 @@ const getAllShoppingCartPurchase = async (req, res) =>{
     const data = await connection.query(`
         SELECT 
             s.Id_cart AS Id_Carrito,
-            s.Id_userFK AS Id_usuario, 
-            u.FullName_user AS Nombre_usuario, 
-            a.Id_Art AS Id_producto,
+     
+            a.Title_Art AS Titulo,
+            a.Img_Art AS Imagen,
             a.Descr_Art AS Descripcion_producto,
-            a.Price_Art AS Precio_unitario,
-            COUNT(*) AS Cantidad,
-            SUM(a.Price_Art) AS Precio_total 
+            a.Price_Art AS Precio_Original,
+            COUNT(*) AS Cantidad
         FROM 
             shopping_cart s 
             INNER JOIN user u ON s.Id_userFK = u.Id_user 
