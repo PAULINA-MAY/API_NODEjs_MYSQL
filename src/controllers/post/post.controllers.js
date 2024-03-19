@@ -91,7 +91,7 @@ const uploadImageFile = async (req, res) => {
 
 }
 
-const postAdressById = async (req, res) => {
+/* const postAdressById = async (req, res) => {
     try {
         const id = req.params.id
         const { codigoPostal, calle,ciudad, numExt, numInter } = req.body
@@ -145,7 +145,7 @@ const postAdressById = async (req, res) => {
 
     }
 
-}
+} */
 
 const postFavorite = async (req, res) => {
     try {
@@ -235,59 +235,49 @@ const postAddShoppingCart = async (req, res) => {
 const postbuy = async (req, res) => {
     try {
         const idUser = req.params.idUser;
-        const { cantidad, precioTotal } = req.body || {};
+        const {  descripcion,precioTotal ,tipoMoneda, status, fecha  } = req.body || {};
         const connection = await getConnection();
 
-        // Obtener información del usuario y su dirección
-        const userData= await connection.query('SELECT * FROM user WHERE Id_user = ?', [idUser]);
-        const direccionData = await connection.query('SELECT * FROM adress WHERE Id_user_FK = ?', [idUser]);
+        // Borrar todos los datos de la tabla 'shopping_cart' para este usuario
+        await connection.query('DELETE FROM shopping_cart WHERE Id_userFK = ?', [idUser]);
 
-        if (userData.length===0 || direccionData.length === 0) {
-            return res.status(404).json({ message: 'The user or adress  does not exist' });
+        // Obtener información del usuario 
+        const userData = await connection.query('SELECT * FROM user WHERE Id_user = ?', [idUser]);
+
+        if (userData.length === 0) {
+            return res.status(404).json({ message: 'No data found for this specific user' });
         }
-
-        // Obtener lista de artículos en el carrito del usuario
-        const shoppingCartItems = await connection.query(`
-            SELECT art.Descr_Art, art.Price_Art, shopping_cart.cantidad
-            FROM shopping_cart 
-            INNER JOIN art ON shopping_cart.Id_artFK = art.Id_Art
-            WHERE shopping_cart.Id_userFK = ?`, [idUser]);
 
         // Insertar la compra en la tabla 'buy'
         const addBuy = {
             Id_FK_user: idUser,
-            quantity: cantidad,
-            total: precioTotal
+            date_create:  fecha,
+            description : descripcion,
+            TotalPrice : precioTotal, 
+            money_Type : tipoMoneda,
+            status : status
+            
         };
 
+              
+ 
+
         const data = await connection.query('INSERT INTO buy SET ?', addBuy);
-        if(data.length===0){
-            return res.status(404).json({ message: 'The user does not exist' });
-        }else{
-            console.log(shoppingCartItems)
-      
-        // Envío de correo electrónico
-       const sendedEmail = await sendEmail(
+        const sendedEmail = await sendEmail(
             userData[0].Email_user,
-            userData[0].FullName_user,
-            direccionData[0].Street,
-            direccionData[0].NumExt_Dir,
-            shoppingCartItems,
-            cantidad,
+            descripcion,
             precioTotal
+
         ); 
+  
+
         res.status(200).json({
             data: data,
             message: 'The buy has been added',
             success: true,
-            status: 200,
-            notified: true,
-            emailSended: sendedEmail.messageId 
+            emailSended: sendedEmail.messageId ,
+            status: 200
         });
-    }
-
-       
-
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error' });
@@ -297,7 +287,7 @@ const postbuy = async (req, res) => {
 
 export const postMethods = {
     uploadImageFile,
-    postAdressById,
+/*     postAdressById, */
     postArtById,
     postFavorite,
     postAddShoppingCart,

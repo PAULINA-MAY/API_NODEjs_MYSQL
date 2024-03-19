@@ -47,7 +47,7 @@ const getUsers = async (req , res) =>{
 
 }
 
-const getAdressUseById = async (req,res)=>{
+/* const getAdressUseById = async (req,res)=>{
   try {
       const id = req.params.id
       const connection = await getConnection();
@@ -74,7 +74,7 @@ const getAdressUseById = async (req,res)=>{
     res.status(500).json({ message : 'Internal Server Error'})
   }
 
-}
+} */
 
 
  const getArtByIdUser = async (req,res) =>{
@@ -232,7 +232,7 @@ const getAllShoppingCartPurchase = async (req, res) =>{
 }
 export const getMethods={
     getUsers,
-    getAdressUseById,
+/*     getAdressUseById, */
     getArtByIdUser,
     getAllArts,
     getFavoritesByUserId,

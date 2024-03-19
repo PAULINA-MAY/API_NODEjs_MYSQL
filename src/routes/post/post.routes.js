@@ -9,7 +9,7 @@ const router = Router();
 //ROUTES USER
 router.post("/uploadImage/:id",checkAuth,upload.single('file') , postMethods.uploadImageFile);
 //ROUTES ADRESS
-router.post("/postadress/:id",checkAuth, postMethods.postAdressById)
+/* router.post("/postadress/:id",checkAuth, postMethods.postAdressById) */
 //ROUTES ART
 router.post("/postArt/:id", checkAuth,upload.single('file'), postMethods.postArtById )
 //ROUTES FAVORITES

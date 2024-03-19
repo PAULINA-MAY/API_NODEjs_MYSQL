@@ -65,7 +65,7 @@ const  registerUser = async (req,res) =>{
          const results = await connection.query('SELECT * FROM user WHERE  Email_user = ?', [email]);
         if(results.length=== 0 ){
             return res.send({
-                status: 200,
+                status: 409,
                message : 'The are not data found for this specific User',
      
              })

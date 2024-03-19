@@ -7,8 +7,8 @@ const checkAuth = require('../../middleware/checkAuth')
 //ROUTES USER
 router.get("/getUsers", checkAuth, getMethods.getUsers)
 
-//ROUTES ADRESS
-router.get("/getAdressUserById/:id", checkAuth, getMethods.getAdressUseById)
+/* //ROUTES ADRESS
+router.get("/getAdressUserById/:id", checkAuth, getMethods.getAdressUseById) */
 
 //ROUTES ART
 //ENDPOINT PARA  OBTENER LAS PINTURAS QUE YA AGREGO EL USUARIO A LA PLATORMA
