@@ -2,7 +2,11 @@ const { check } = require('express-validator')
 const { validateResults } = require('../helpers/validateHelper')
 
 const validateCreate = [
-    check('name')
+    check('firstNames')
+        .exists()
+        .not()
+        .isEmpty(),
+        check('lastNames')
         .exists()
         .not()
         .isEmpty(),
@@ -15,8 +19,6 @@ const validateCreate = [
         .exists()
         .not()
         .isEmpty(),
-        check('rol')
-        .exists(),
     (req, res, next) => {
         validateResults(req, res, next)
     }

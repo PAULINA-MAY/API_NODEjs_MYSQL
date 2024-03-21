@@ -3,101 +3,102 @@ import { tokenSing } from "../../helpers/generateToken";
 import { encrypt, compare} from "../../helpers/handleBcrypt";
 
 
-
-const  registerUser = async (req,res) =>{
+const registerUser = async (req, res) => {
     try {
-        const {name,password,email,rol} = req.body
+        const { firstNames, lastNames, password, email } = req.body;
         const connection = await getConnection();
-        const passwordHash = await encrypt(password)
-        const defaultImage = 'https://res.cloudinary.com/ddfdcx85l/image/upload/v1708497453/ugbw6xdzxrxhqvzpdtfe.jpg'
-        if(!rol){
-           
-      
-            const newUser = {
-                FullName_user: name,
-                Email_user: email, 
-                Password_user: passwordHash,
-                Rol_user: 'user',
-                ImgProfile_user : defaultImage 
-    
-            };
-            console.log(newUser)
-            const inserted = await connection.query('INSERT INTO user SET ?', newUser);
-          
-            res.send({
-                data : inserted,
-                message : 'The user has been inserted',
-                success : true,
-                status : 200,
-            })
-           
-        }else{
-      
-            const newUser = {
-                FullName_user: name,
-                Email_user: email, 
-                Password_user: passwordHash,
-                Rol_user: rol,
-                ImgProfile_user :defaultImage 
-            };
-            console.log( newUser)
-            const inserted = await connection.query('INSERT INTO user SET ?', newUser);
-            res.send({
-                data : inserted,
-                message : 'The user has been inserted',
-                success : true,
-                status : 200,
-            })
+        const passwordHash = await encrypt(password);
+        const defaultImage = 'https://res.cloudinary.com/ddfdcx85l/image/upload/v1708497453/ugbw6xdzxrxhqvzpdtfe.jpg';
 
+        // Insertar el nuevo usuario
+        const newUser = {
+            FirstNames_user: firstNames,
+            LastNames_user: lastNames,
+            Email_user: email,
+            Password_user: passwordHash,
+            ImgProfile_user: defaultImage
+        };
+
+        const insertedUser = await connection.query('INSERT INTO User SET ?', newUser);
+
+        if (insertedUser.affectedRows === 0) {
+            return res.status(401).send({
+                message: 'The user has not been inserted',
+                status: 401
+            });
         }
-        
+
+        // Obtener el Id_user del usuario recién insertado
+        const userId = insertedUser.insertId; // Usar 'insertId' en lugar de 'Id_user'
+
+        // Insertar el rol 'user' asociado al usuario en la tabla Rol
+        const insertedRol = await connection.query('INSERT INTO Rol (Name_rol, Id_user_FK) VALUES (?, ?)', ['user', userId]);
+
+        if (insertedRol.affectedRows === 0) {
+            // Si no se pudo insertar el rol, eliminar el usuario previamente insertado y enviar un mensaje de error
+            await connection.query('DELETE FROM User WHERE Id_user = ?', [userId]);
+            return res.status(401).send({
+                message: 'The role has not been inserted',
+                status: 401
+            });
+        }
+
+        // Ambos usuario y rol se han insertado correctamente
+        res.send({
+            message: 'User and role have been inserted successfully',
+            status: 200
+        });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ message: 'Error interno del servidor' });
-        
+        res.status(500).json({ message: 'Internal Server Error' });
     }
 };
 
- const login =  async (req,res)=>{
+
+
+
+const login = async (req, res) => {
     try {
-         const {email, password} = req.body
-         const connection = await getConnection();
-         const results = await connection.query('SELECT * FROM user WHERE  Email_user = ?', [email]);
-        if(results.length=== 0 ){
-            return res.send({
+        const { email, password } = req.body;
+        const connection = await getConnection();
+        const results = await connection.query('SELECT  u.Id_user, u.Password_user, r.Name_rol AS Rol  FROM  User u JOIN Rol r ON u.Id_user = r.Id_user_FK   WHERE u.Email_user = ?', [email]);
+
+        if (results.length === 0) {
+            return res.status(409).json({
                 status: 409,
-               message : 'The are not data found for this specific User',
-     
-             })
-     
+                message: 'No se encontraron datos para este usuario.',
+            });
+        } else {
+            const user = results[0];
+            const checkPassword = await compare(password, user.Password_user);
+            if (!checkPassword) {
+                return res.status(409).json({
+                    status: 409,
+                    message: 'La contraseña proporcionada es incorrecta.',
+                });
+            } else {
+              
+                const tokenSession = await tokenSing(user);
 
-        }else{
-            const checkpassword = await compare(password, results[0].Password_user)
-            const  tokenSession = await tokenSing(results)
-            if(!checkpassword ){
-                return res.status(409).json( {   message : 'Invalid Password' });
-             }else{
-                return res.send({
-                     results,
-                    message : 'Log in',
-                    token : tokenSession
-                  })
-             }
+                const fetchdata = results.map(user => {
+                    const { Password_user, ...userData } = user; // Excluir el campo Password_user
+                    return userData;
+                });
 
+                return res.status(200).json({
+                    status: 200,
+                    message: 'Inicio de sesión exitoso.',
+                    user: fetchdata ,
+                    token: tokenSession,
+                });
+            }
         }
-           
-           
-    
-         
     } catch (error) {
-        console.log(error);
-       return  res.status(500).json({ message: 'Error interno del servidor' });
-
- 
-        
+        console.error(error);
+        return res.status(500).json({ message: 'Error interno del servidor.' });
     }
+};
 
-} 
 
 
 
