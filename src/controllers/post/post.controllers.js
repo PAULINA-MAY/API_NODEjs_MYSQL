@@ -84,6 +84,7 @@ const postCategory = async(req,res) =>{
             return res.status(409).json({ message: "the category has not been inserted" });
         } else {
             res.send({
+                message : 'The category has been posted',
                 success: true,
                 status: 200,
             })
@@ -196,7 +197,7 @@ const postAddShoppingCart = async (req, res) => {
           // Verificar si el artículo ya está en el carrito
           const checkExistingItem = await connection.query('SELECT * FROM Cart WHERE Id_userFK = ? AND Id_prodFK = ?', [idUser, idArt]);
           if (checkExistingItem.length > 0) {
-              return res.status(409).json({ message: 'The art already exists in the shopping cart' });
+              return res.status(409).json({ message: 'The product already exists in the shopping cart' });
           }
 
 
@@ -260,7 +261,6 @@ const postbuy = async (req, res) => {
   
 
         res.status(200).json({
-            data: data,
             message: 'The buy has been payed',
             success: true,
             emailSended: sendedEmail.messageId ,

@@ -7,8 +7,8 @@ const checkAuth = require('../../middleware/checkAuth')
 //ROUTES USER
 router.delete("/deleteUsers/:id",checkAuth , deleteMethods.deleteUserById )
 //ROUTES ART
-///ENDPOINT PARA BORRAR UNA PINTURA INDICANDO EL ID DE LA PINTURA
-router.delete("/deleteArtById/:id", checkAuth, deleteMethods.deleteArtById )
+///ENDPOINT PARA BORRAR UNPRODUCTO INDICANDO EL ID DEL MISMO 
+router.delete("/deleteArtById/:id", checkAuth, deleteMethods.deleteProductById )
 //ROUTES FAVORITES
 // ENDPOINT PARA BORRAR UNA PINTURA FAVORITA DEL USUARIO INDICANDO EL ID 
 router.delete("/deleteFavoriteById/:id", checkAuth, deleteMethods.deleteFavoritesById)

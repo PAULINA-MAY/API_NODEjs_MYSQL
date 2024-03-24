@@ -8,8 +8,6 @@ const router = Router();
 
 //ROUTES USER
 router.post("/uploadImage/:id",checkAuth,upload.single('file') , postMethods.uploadImageFile);
-//ROUTES ADRESS
-/* router.post("/postadress/:id",checkAuth, postMethods.postAdressById) */
 //ROUTES PRODUCT
 router.post("/postArt/:id/:idCategory", checkAuth,upload.single('file'), postMethods.postArtById )
 // ROUTES CATEGORY
@@ -20,7 +18,7 @@ router.post("/postFavorite/:idUser/:idArt", checkAuth, postMethods.postFavorite 
 //ROUTES SHOPPING CART
 router.post("/postAddShoppingCart/:idUser/:idArt/:cantidad", checkAuth, postMethods.postAddShoppingCart) 
 
-//ROUTES BUY
+//ROUTES PURCHASE
 router.post("/postAddBuy/:idUser", checkAuth, postMethods.postbuy)
 
 

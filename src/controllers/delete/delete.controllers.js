@@ -10,7 +10,7 @@ const deleteUserById = async(req, res) =>{
                         {
                             success: false,
                             message: 'No data found for the specified user',
-                            status : 409
+                            status : 404
                         }
                      )
               }else{
@@ -34,31 +34,37 @@ const deleteUserById = async(req, res) =>{
 
 }
 
-const deleteArtById = async (req,res)=>{
+const deleteProductById = async (req,res)=>{
 
         try {
               const id = req.params.id
               const connection = await getConnection()
-              const  exist = await connection.query('SELECT * FROM art WHERE Id_Art = ?' , [id])
+              const  exist = await connection.query('SELECT * FROM Product WHERE Id_prod = ?' , [id])
               if(exist.length=== 0){
                      res.send(
                             {
                                 success: false,
-                                message: 'No data found for the specified art',
-                                status : 409
+                                message: 'No data found for the specified product',
+                                status : 404
                             }
                          )
               }else{
-                     const deleted = await connection.query('DELETE FROM art  WHERE  Id_Art = ?', [id]); 
-                     res.send({
-                            data : deleted,
-                            message : 'The art has been deleted',
-                            succes : true,
-                            status : 200
+                     const deleted = await connection.query('DELETE FROM Product  WHERE  Id_prod = ?', [id]); 
+                     if(deleted.affectedRows === 0){
+                            return res.status(409).json({ message: "error when trying to delete the product" });
+                     }else{
+                            res.send({
+                                   data : deleted,
+                                   message : 'The art has been deleted',
+                                   succes : true,
+                                   status : 200
+       
+       
+       
+                            })
 
-
-
-                     })
+                     }
+                    
 
               }
               
@@ -85,7 +91,6 @@ const deleteFavoritesById = async (req, res)=>{
               }else{
                      const data = connection.query('DELETE FROM Favorites WHERE Id_favorites = ?', [id])
                      res.send({
-                     data : data,
                             message : 'The favorite art has been deleted',
                             success : true,
                             status : 200
@@ -107,22 +112,15 @@ const deleteShoppingCartById = async (req, res) => {
            const connection = await getConnection();
    
            // Verificar si la compra existe en el carrito
-           const purchase = await connection.query('SELECT * FROM shopping_cart WHERE Id_cart = ?', [id]);
+           const purchase = await connection.query('SELECT * FROM Cart WHERE Id_cart = ?', [id]);
    
            if (purchase.length===0) {
                return res.status(404).json({ success: false, message: 'No data found for the specified purchase', status: 404 });
            }else{
-              // Obtener el ID del artículo que se está eliminando
-              const idArt = purchase[0].Id_artFK;
-
-              console.log(idArt )
-           // Incrementar el stock del artículo eliminado
-           await connection.query('UPDATE art SET Stock = Stock + 1 WHERE Id_Art = ?', [idArt]);
-   
            // Eliminar la entrada del carrito
-           const deleted = await connection.query('DELETE FROM shopping_cart WHERE Id_cart = ?', [id]);
-           if(deleted.length === 0){
-              return res.status(404).json({ success: false, message: 'The purchase has not been deleted', status: 404 });
+           const deleted = await connection.query('DELETE FROM Cart WHERE Id_cart = ?', [id]);
+           if(deleted.affectedRows === 0){
+              return res.status(409).json({ success: false, message: 'The purchase has not been deleted', status: 409 });
 
            }else{
               return res.status(200).json({ success: true, message: 'The purchase has been deleted', status: 200 });
@@ -141,7 +139,7 @@ const deleteShoppingCartById = async (req, res) => {
 
 export const deleteMethods={
        deleteUserById,
-       deleteArtById,
+       deleteProductById,
        deleteFavoritesById,
        deleteShoppingCartById
    

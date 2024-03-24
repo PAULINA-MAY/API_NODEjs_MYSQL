@@ -45,7 +45,7 @@ const getUsers = async (req , res) =>{
 
 
 }
-const getAllArts = async (req, res) => {
+const getAllProducts = async (req, res) => {
   try {
     // Parámetros de paginación
     const page = parseInt(req.query.page) || 1; // Página actual
@@ -93,17 +93,105 @@ const getAllArts = async (req, res) => {
     console.log(error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
-};
+}
+
+const getAllCategories = async (req, res) =>{
+    try {
+
+      const connection = await getConnection();
+      const data = await connection.query('SELECT  Id_catg  AS Id , Name_catg ,Description_catg AS Description , Img_catg AS Img , DateCreated_catg AS Date_Created FROM Category ')
+      if(data.length ===0){
+        res.status(404).json({message : 'No data found '})
+
+      }else{
+        res.send({
+          data : data,
+          success : true,
+          status : 200,
+        })
+
+      }
+      
+    } catch (error) {
+      
+    }
+}
+
+const getCartByIdUser = async (req, res) =>{
+  try {
+    const id = req.params.id;
+    const connection = await getConnection();
+    const data = await connection.query(`
+        SELECT 
+            c.Id_cart AS Id,
+     
+            p.Name_prod AS NameProd,
+            p.Img_prod AS ImgProd,
+            p.Description_prod AS DescProd,
+            p.Price_Prod AS priceProd,
+            COUNT(*) AS quantity
+        FROM 
+            Cart c
+            INNER JOIN user u ON c.Id_userFK = u.Id_user 
+            INNER JOIN Product p ON c.Id_prodFK = p.Id_prod
+        WHERE 
+            u.Id_user = ?  
+        GROUP BY  
+            c.Id_userFK, 
+            u.FirstNames_user, 
+            p.Id_prod, 
+            p.Description_prod, 
+            p.Price_Prod`, [id]);
+
+    if (data.length === 0) {
+        res.status(404).json({ message: 'No data found for this specific user' });
+    } else {
+        res.status(200).json({
+            data: data,
+            success: true
+        });
+    }
+} catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+}
+          
+
+}
+
+const getArtById = async (req, res) =>{
+  try {
+    const id = req.params.id
+    const connection = await getConnection()
+    const data = await connection.query('SELECT Name_prod AS Nombre,Description_prod AS Description, Price_Prod AS Price, Img_prod AS Image FROM  Product  WHERE Id_prod = ?', [id])
+    if (data.length===0) {
+      res.status(409).send({
+        success: false,
+        message: 'No data found for the specified ART'})
+      
+    }else{
+      res.send({
+        data : data,
+        success : true,
+        status : 200
+      })
+
+    } 
 
 
+    
+  } catch (error) {
+    
+  }
 
+}
 
- const getArtByIdUser = async (req,res) =>{
+ const getProdByIdUser = async (req,res) =>{
    try {
     const id = req.params.id
        const connection = await getConnection()
 
-        const data = await connection.query('SELECT  Id_user AS ID_USER, FullName_user AS NOMBRE_ARTISTA, Id_Art, Descr_Art, Price_Art, Stock AS CANTIDAD,Category_Art, Img_Art  FROM art  JOIN user ON  Id_userFK =	Id_user WHERE Id_user = ?', [id])
+        const data = await connection.query('SELECT   u.FirstNames_user AS Nombres, u.LastNames_user AS Apellidos,  u.ImgProfile_user AS Profile,  p.Name_prod AS Nombre_del_producto,  p.Description_prod AS Descripcion,  p.Price_Prod AS Precio,  p.Status_prod AS Estado, p.Img_prod AS ImgProduct, c.Name_catg AS Categoria  FROM     User_Prod up  INNER JOIN User u ON up.Id_u_fk = u.Id_user  INNER JOIN Product p ON up.Id_p_fk = p.Id_prod  INNER JOIN Category c ON p.Id_catg_FK = c.Id_catg  WHERE Id_user = ?', [id])
         if (data.length===0) {
           res.status(409).send({
             success: false,
@@ -128,41 +216,11 @@ const getAllArts = async (req, res) => {
    }
 } 
 
-const getArtById = async (req, res) =>{
-  try {
-    const id = req.params.id
-    const connection = await getConnection()
-    const data = await connection.query('SELECT Title_Art AS Titulo, Descr_Art AS Descripcion, Price_Art AS Precio, Img_Art AS Imagen FROM art WHERE Id_Art = ?', [id])
-    if (data.length===0) {
-      res.status(409).send({
-        success: false,
-        message: 'No data found for the specified ART'})
-      
-    }else{
-      res.send({
-        data : data,
-        success : true,
-        status : 200
-      })
-
-    } 
-
-
-    
-  } catch (error) {
-    
-  }
-
-}
-
-
-
-
 const getFavoritesByUserId= async (req, res) =>{
   try {
       const id = req.params.id;
       const connection = await getConnection();
-      const data = await connection.query('SELECT Id_favorites, Descr_Art AS DESCRIPCION, Price_Art AS PRECIO, Category_Art AS CATEGORIA, Img_Art AS IMAGEN FROM Favorites JOIN art  ON Id_FKart = Id_Art WHERE  Id_FKuser = ?', [id]);
+      const data = await connection.query('SELECT Id_favorites AS Id , Name_prod AS NameProduct, Description_prod AS Description, Price_Prod AS Price , Img_prod  FROM  User INNER JOIN  Favorites  ON  Id_user = Id_FKuser  INNER JOIN  Product  ON  Id_FKprod = Id_prod  WHERE   Id_user = ?', [id]);
       if(data.length ===0){
         res.status(409).json({message : 'No data found for this specific user'})
 
@@ -183,55 +241,19 @@ const getFavoritesByUserId= async (req, res) =>{
 
 }
 
-const getAllShoppingCartPurchase = async (req, res) =>{
-  try {
-    const id = req.params.id;
-    const connection = await getConnection();
-    const data = await connection.query(`
-        SELECT 
-            s.Id_cart AS Id_Carrito,
-     
-            a.Title_Art AS Titulo,
-            a.Img_Art AS Imagen,
-            a.Descr_Art AS Descripcion_producto,
-            a.Price_Art AS Precio_Original,
-            COUNT(*) AS Cantidad
-        FROM 
-            shopping_cart s 
-            INNER JOIN user u ON s.Id_userFK = u.Id_user 
-            INNER JOIN art a ON s.Id_artFK = a.Id_Art 
-        WHERE 
-            u.Id_user = ?  
-        GROUP BY  
-            s.Id_userFK, 
-            u.FullName_user, 
-            a.Id_Art, 
-            a.Descr_Art, 
-            a.Price_Art`, [id]);
 
-    if (data.length === 0) {
-        res.status(409).json({ message: 'No data found for this specific user' });
-    } else {
-        res.status(200).json({
-            data: data,
-            success: true
-        });
-    }
-} catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-}
-          
 
-}
+
+
+
 export const getMethods={
     getUsers,
-/*     getAdressUseById, */
-    getArtByIdUser,
-    getAllArts,
+    getProdByIdUser,
+    getAllProducts,
     getFavoritesByUserId,
-    getAllShoppingCartPurchase,
-    getArtById 
+    getCartByIdUser,
+    getArtById ,
+    getAllCategories 
 
 
 }
