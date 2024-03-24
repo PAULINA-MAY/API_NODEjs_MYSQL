@@ -7,8 +7,8 @@ const getUsers = async (req , res) =>{
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const offset = (page - 1) * limit;
-    const data = await connection.query(`SELECT * FROM user LIMIT ${limit} OFFSET ${offset}`);
-    const totalPageData = await connection.query(`SELECT COUNT(*) as count  FROM user `);
+    const data = await connection.query(`SELECT  Id_user, FirstNames_user, LastNames_user, Email_user , ImgProfile_user , DateCreated_user FROM user LIMIT ${limit} OFFSET ${offset}`);
+    const totalPageData = await connection.query(`SELECT COUNT(*) as count  FROM User `);
     const  totalPage = Math.ceil(totalPageData[0].count /limit);
 
 
@@ -22,8 +22,7 @@ const getUsers = async (req , res) =>{
             pagination: {
               page : +page,
               totalPageData : totalPageData[0].count,
-              limit : +limit,
-              totalPage 
+              limit : +limit 
 
             },
 
@@ -46,35 +45,57 @@ const getUsers = async (req , res) =>{
 
 
 }
-
-/* const getAdressUseById = async (req,res)=>{
+const getAllArts = async (req, res) => {
   try {
-      const id = req.params.id
-      const connection = await getConnection();
-  
-        const data = await connection.query('SELECT FullName_user AS NOMBRE, Cp_Dir AS CODIGOPOSTAL,  City_Dir AS CIUDAD, NumExt_Dir AS NUMEXT, NumInter_Dir AS NUMINTER  FROM  user INNER JOIN  adress ON  Id_user = Id_user_FK  WHERE   Id_user = ?', [id])
-        if(data.length===0){
-          res.status(409).send({
-            success: false,
-            message: 'No data found for the specified user'})
-          
-        }else{
-          res.send({
-            data : data,
-            success : true,
-            status : 200
-          })
+    // Parámetros de paginación
+    const page = parseInt(req.query.page) || 1; // Página actual
+    const pageSize = parseInt(req.query.pageSize) || 10; // Tamaño de la página
 
+    const connection = await getConnection();
+    const offset = (page - 1) * pageSize;
+
+    // Consulta para obtener los productos con paginación
+    const data = await connection.query(
+      `SELECT 
+        Product.Id_prod AS Id,
+        Product.Name_prod AS Name,
+        Product.Description_prod AS Description,
+        Product.Price_Prod AS Price,
+        Product.Img_prod AS Img,
+        Product.Status_prod AS Status,
+        Product.DateCreated_prod,
+        Category.Name_catg AS Category
+      FROM 
+        Product
+      INNER JOIN 
+        Category ON Product.Id_catg_FK = Category.Id_catg
+      LIMIT ? OFFSET ?`,
+      [pageSize, offset]
+    );
+
+    if (data.length === 0) {
+      res.status(404).send({
+        success: false,
+        message: 'No se encontraron datos.'
+      });
+    } else {
+      res.send({
+        data: data,
+        success: true,
+        status: 200,
+        pagination: {
+        page : page,
+        pageZise : pageSize
         }
-     
-
-    
+      });
+    }
   } catch (error) {
-    console.log(error)
-    res.status(500).json({ message : 'Internal Server Error'})
+    console.log(error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
+};
 
-} */
+
 
 
  const getArtByIdUser = async (req,res) =>{
@@ -135,34 +156,7 @@ const getArtById = async (req, res) =>{
 }
 
 
-const  getAllArts= async (req,res) =>{
-  try {
-      const connection = await getConnection()
-       const data = await connection.query('SELECT * FROM art')
-       if (data.length===0) {
-         res.status(409).send({
-           success: false,
-           message: 'There are not data for show'})
-         
-       }else{
-         res.send({
-           data : data,
-           success : true,
-           status : 200
-         })
 
-       }
-   
-      
-      
-      
-   
-  } catch (error) {
-   console.log(error)
-   res.status(500).json({message : 'Internal Server Error'})
-   
-  }
-} 
 
 const getFavoritesByUserId= async (req, res) =>{
   try {

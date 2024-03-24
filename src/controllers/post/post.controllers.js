@@ -1,60 +1,106 @@
 
 import { getConnection } from "../../database/database"
-import config from '../../config'
-import app from "../../app";
 import {sendEmail} from "../../helpers/sendEmail"
 const cloudinary = require("../../cloudinary");
+
 
 const postArtById = async (req, res) => {
     try {
         const id = req.params.id;
+        const idCategory = req.params.idCategory
         const image = req.file;
-        const { titulo, descripcion, precio, Categoria, cantidad } = req.body;
+        const { name, description, price } = req.body;
         const connection = await getConnection();
+             // Verificar si el usuario existe
+             const user = await connection.query('SELECT * FROM user WHERE Id_user = ?', [id]);
+             if (user.length === 0) {
+                 return res.status(409).json({ message: " The user does not exist" });
+             }else{
+                  // Verificar si ya existe un producto con el mismo nombre
+                const existingProduct = await connection.query('SELECT * FROM Product WHERE Name_prod = ?', [name]);
+                if (existingProduct.length > 0) {
+                    return res.status(409).json({ message: "the product alredy exist" });
+                }else{
+                        // Cargar la imagen del producto en Cloudinary
+                    const urlImage = await cloudinary.uploader.upload(image.path);
+                        const newProduct = {
+                            Id_catg_FK: idCategory,
+                            Description_prod : description,
+                            Name_prod: name,
+                            Price_Prod: price,
+                            Img_prod : urlImage.url
+                        };
+                        const productInserted = await connection.query('INSERT INTO Product SET ?', newProduct);
+                          if (productInserted.affectedRows === 0) {
+                            return res.status(409).json({ message: "error  registering the product" });
+                            
+                          } else {
+                            
+                            const productryId = productInserted.insertId;
+                             // Insertar la relación entre el usuario y el producto en la tabla User_Prod
+                             const newUserProd = {
+                                Id_u_fk: id,
+                                Id_p_fk: productryId,
+                            };
+                            const data    =  await connection.query('INSERT INTO User_Prod SET ?', newUserProd);
+                            if(data.length === 0){
+                                return res.status(409).json({ message: "the data was refused" });
+                            }else{
+                                res.status(200).send({
+                                    message : 'The product has been inserted',
+                                    success: true
+                                });
+
+                            
+                            }
         
-        // Verificar si ya existe un artículo con el mismo título
-        const existingArt = await connection.query('SELECT * FROM art WHERE Title_Art = ?', [titulo]);
-        if (existingArt.length > 0) {
-            return res.status(409).json({ message: "El artículo ya existe" });
-        }
+                          }
+                        }
+                    }
 
-        // Verificar si el usuario existe
-        const user = await connection.query('SELECT * FROM user WHERE Id_user = ?', [id]);
-        if (user.length === 0) {
-            return res.status(409).json({ message: "El usuario no existe" });
-        }
-
-        // Cargar la imagen del artículo en Cloudinary
-        const urlImage = await cloudinary.uploader.upload(image.path);
-        
-        const newArt = {
-            Id_userFK: id,
-            Title_Art: titulo,
-            Descr_Art: descripcion,
-            Price_Art: precio,
-            Category_Art: Categoria,
-            Stock: cantidad,
-            Img_Art: urlImage.url,
-        };
-
-        // Insertar el nuevo artículo en la base de datos
-        const data = await connection.query('INSERT INTO art SET ?', newArt);
-
-        res.status(200).send({
-            data: data,
-            success: true
-        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Error interno del servidor' });
     }
 };
+
+const postCategory = async(req,res) =>{
+    const image = req.file;
+    const { name, description } = req.body;
+    const connection = await getConnection();
+    const category = await connection.query('SELECT * FROM  Category WHERE Name_catg = ?', [name]);
+    if (category.length > 0) {
+        return res.status(409).json({ message: "the category alredy exist" });
+    }else{
+        // Cargar la imagen del producto en Cloudinary
+        const urlImage = await cloudinary.uploader.upload(image.path);
+        const newCategory ={
+            Name_catg : name,
+            Description_catg : description,
+            Img_catg : urlImage.url
+        }
+        const categoryInserted = await connection.query('INSERT INTO Category SET ?', newCategory);
+        if (categoryInserted.affectedRows === 0) {
+            return res.status(409).json({ message: "the category has not been inserted" });
+        } else {
+            res.send({
+                success: true,
+                status: 200,
+            })
+
+        }
+
+    }
+        
+};
+
+
 const uploadImageFile = async (req, res) => {
     try {
         const image = req.file
         const id = req.params.id
         const connection = await getConnection();
-        const exist = await connection.query('SELECT * FROM user WHERE Id_user = ?', [id])
+        const exist = await connection.query('SELECT * FROM User WHERE Id_user = ?', [id])
         if (exist.length === 0) {
 
             return res.status(409).json({ message: 'the user does not exist' })
@@ -91,94 +137,46 @@ const uploadImageFile = async (req, res) => {
 
 }
 
-/* const postAdressById = async (req, res) => {
-    try {
-        const id = req.params.id
-        const { codigoPostal, calle,ciudad, numExt, numInter } = req.body
-        const connection = await getConnection();
-        const exist = await connection.query('SELECT * FROM user WHERE Id_user = ?', [id])
-        if (exist.length === 0) {
-            res.status(409).send({
-                success: false,
-                message: 'This user does not exist'
-            })
-        }
-        else {
-
-            const getAdressUser = await connection.query('SELECT FullName_user AS NOMBRE, Cp_Dir AS CODIGOPOSTAL,  City_Dir AS CIUDAD, NumExt_Dir AS NUMEXT, NumInter_Dir AS NUMINTER  FROM  user INNER JOIN  adress ON  Id_user = Id_user_FK  WHERE   Id_user = ?', [id])
-            if (getAdressUser.length === 0) {
-                const newAdress = {
-                    Id_user_FK: id,
-                    Cp_Dir: codigoPostal,
-                    Street : calle,
-                    City_Dir: ciudad,
-                    NumExt_Dir: numExt,
-                    NumInter_Dir: numInter,
-                
-
-                };
-                const data = await connection.query('INSERT INTO adress SET ?', newAdress)
-                res.send({
-                    data: data,
-                    success: true,
-                    status: 200,
-
-                })
-
-            } else {
-                res.status(409).send({
-                    success: false,
-                    message: 'The adress has been inserted for this specific user'
-                })
-
-            }
-
-
-        }
-
-
-
-
-    } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: 'Internal Server Error ' })
-
-    }
-
-} */
 
 const postFavorite = async (req, res) => {
     try {
-        const idUser = req.params.idUser
-        const idArt = req.params.idArt
+        const idUser = req.params.idUser;
+        const idArt = req.params.idArt;
         const connection = await getConnection();
-        const addFavorite = {
-            Id_FKuser: idUser,
-            Id_FKart: idArt
+        
+        // Verificar si el producto ya está en favoritos
+        const existFavorite = await connection.query('SELECT * FROM Favorites WHERE Id_FKprod = ?', [idArt]);
+        if (existFavorite.length > 0) {
+            return res.status(406).json({ message: 'The favorite product already exists' });
+        } 
+        
+      
+        try {
+             await connection.query('INSERT INTO Favorites SET ?', {
+                Id_FKuser: idUser,
+                Id_FKprod: idArt
+            });
+            
+            // Envía respuesta de éxito
+            res.status(201).json({
+                message: 'The favorite product has been inserted',
+                success: true
+            });
+        } catch (error) {
+            // Si la inserción falla, manejar el error
+            if (error.code === 'ER_NO_REFERENCED_ROW') {
+                return res.status(404).json({ message: 'User not found' });
+            } else {
+                return res.status(409).json({ message: 'The user or product does not exist' });
+            }
         }
-        const data = await connection.query('INSERT INTO Favorites SET ?', addFavorite)
-        if (data.length === 0) {
-
-            return res.status(409).json({ message: 'the user or art do not exist' })
-        } else {
-            res.send({
-                data: data,
-                success: true,
-                status: 200,
-
-            })
-
-        }
-
 
     } catch (error) {
-        console.log(error)
-        res.status(500).json({ message: 'Internal Server Error' })
-
+        console.log(error);
+        res.status(500).json({ message: 'Internal Server Error' });
     }
+};
 
-
-}
 const postAddShoppingCart = async (req, res) => {
     try {
         const idUser = req.params.idUser;
@@ -187,8 +185,8 @@ const postAddShoppingCart = async (req, res) => {
         const connection = await getConnection();
 
         // Verificar si el usuario y el artículo existen
-        const userExists = await connection.query('SELECT * FROM user WHERE Id_user = ?', [idUser]);
-        const artExist = await connection.query('SELECT * FROM art WHERE Id_Art = ?', [idArt]);
+        const userExists = await connection.query('SELECT * FROM User WHERE Id_user = ?', [idUser]);
+        const artExist = await connection.query('SELECT * FROM Product WHERE Id_prod = ?', [idArt]);
 
         // Validar la existencia del usuario y el artículo
         if (userExists.length === 0 || artExist.length === 0) {
@@ -196,31 +194,21 @@ const postAddShoppingCart = async (req, res) => {
         }
         
           // Verificar si el artículo ya está en el carrito
-          const checkExistingItem = await connection.query('SELECT * FROM shopping_cart WHERE Id_userFK = ? AND Id_artFK = ?', [idUser, idArt]);
+          const checkExistingItem = await connection.query('SELECT * FROM Cart WHERE Id_userFK = ? AND Id_prodFK = ?', [idUser, idArt]);
           if (checkExistingItem.length > 0) {
               return res.status(409).json({ message: 'The art already exists in the shopping cart' });
           }
 
-        // Verificar si hay suficiente stock disponible
-   
-        if (artExist[0].Stock < cantidad) {
-            return res.status(409).json({ message: 'Insufficient stock available' });
-        } 
-
-      
 
         // Agregar la compra al carrito
         const addBuy = {
             Id_userFK: idUser,
-            Id_artFK: idArt,
-            cantidad: cantidad
+            Id_prodFK: idArt,
+            quantity: cantidad
         };
 
-        // Insertar la compra en el carrito y restar la cantidad del stock
-        await connection.beginTransaction();
-        await connection.query('INSERT INTO shopping_cart SET ?', addBuy);
-        await connection.query('UPDATE art a SET  a.Stock = a.Stock - ? WHERE Id_Art = ?', [cantidad, idArt]);
-        await connection.commit();
+        // Insertar la compra en el carrito 
+        await connection.query('INSERT INTO Cart SET ?', addBuy);
 
         res.status(200).json({
             message: 'The purchase has been added to the cart',
@@ -235,14 +223,14 @@ const postAddShoppingCart = async (req, res) => {
 const postbuy = async (req, res) => {
     try {
         const idUser = req.params.idUser;
-        const {  descripcion,precioTotal ,tipoMoneda, status, fecha  } = req.body || {};
+        const {  descripcion,precioTotal ,tipoMoneda, status, fecha  } = req.body ;
         const connection = await getConnection();
 
         // Borrar todos los datos de la tabla 'shopping_cart' para este usuario
-        await connection.query('DELETE FROM shopping_cart WHERE Id_userFK = ?', [idUser]);
+        await connection.query('DELETE FROM Cart WHERE Id_userFK = ?', [idUser]);
 
         // Obtener información del usuario 
-        const userData = await connection.query('SELECT * FROM user WHERE Id_user = ?', [idUser]);
+        const userData = await connection.query('SELECT * FROM User WHERE Id_user = ?', [idUser]);
 
         if (userData.length === 0) {
             return res.status(404).json({ message: 'No data found for this specific user' });
@@ -262,7 +250,7 @@ const postbuy = async (req, res) => {
               
  
 
-        const data = await connection.query('INSERT INTO buy SET ?', addBuy);
+        const data = await connection.query('INSERT INTO purchases SET ?', addBuy);
         const sendedEmail = await sendEmail(
             userData[0].Email_user,
             descripcion,
@@ -273,7 +261,7 @@ const postbuy = async (req, res) => {
 
         res.status(200).json({
             data: data,
-            message: 'The buy has been added',
+            message: 'The buy has been payed',
             success: true,
             emailSended: sendedEmail.messageId ,
             status: 200
@@ -287,10 +275,10 @@ const postbuy = async (req, res) => {
 
 export const postMethods = {
     uploadImageFile,
-/*     postAdressById, */
     postArtById,
     postFavorite,
     postAddShoppingCart,
-    postbuy
+    postbuy,
+    postCategory
 
 }
