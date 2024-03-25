@@ -65,6 +65,7 @@ const postArtById = async (req, res) => {
 };
 
 const postCategory = async(req,res) =>{
+   try {
     const image = req.file;
     const { name, description } = req.body;
     const connection = await getConnection();
@@ -92,6 +93,12 @@ const postCategory = async(req,res) =>{
         }
 
     }
+    
+   } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+    
+   }
         
 };
 

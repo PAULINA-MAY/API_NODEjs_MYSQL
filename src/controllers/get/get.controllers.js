@@ -159,6 +159,27 @@ const getCartByIdUser = async (req, res) =>{
 
 }
 
+const getUserById = async (req, res) =>{
+  try {
+    const id = req.params.id;
+    const connection = await getConnection();
+    
+    const  data = await connection.query('SELECT FirstNames_user AS Names, LastNames_user AS LastNames, Email_user AS Email, ImgProfile_user AS Img FROM User WHERE Id_user = ?',[id] )
+    if(data.length === 0){
+      res.status(404).json({ message: 'No data found for this specific user' });
+    }else{
+      res.status(200).json({
+        data: data,
+        success: true
+    });
+    }
+    
+  } catch (error) {
+    
+  }
+
+
+}
 const getArtById = async (req, res) =>{
   try {
     const id = req.params.id
@@ -253,7 +274,8 @@ export const getMethods={
     getFavoritesByUserId,
     getCartByIdUser,
     getArtById ,
-    getAllCategories 
+    getAllCategories ,
+    getUserById
 
 
 }

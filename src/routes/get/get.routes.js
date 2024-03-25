@@ -5,8 +5,10 @@ const router = Router();
 const checkAuth = require('../../middleware/checkAuth')
 
 //ROUTES USER
+// ENDPOINT PARA TRAER LOS DATOS DE TODOS LOS USUARIOS
 router.get("/getUsers", checkAuth, getMethods.getUsers)
-
+// ENDPOINT PARA TRAER DATOS DE UN USUARIO EN ESPECIFICO 
+router.get("/getUserById/:id", checkAuth, getMethods.getUserById)
 
 //ROUTES PRODUCT
 //ENDPOINT PARA  OBTENER TODOS LOS PRODUCTOS PROVENIENTES DE  UN ESPECIFICO  USUARIO A LA PLATORMA
