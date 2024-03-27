@@ -49,7 +49,7 @@ const getAllProducts = async (req, res) => {
   try {
     // Parámetros de paginación
     const page = parseInt(req.query.page) || 1; // Página actual
-    const pageSize = parseInt(req.query.pageSize) || 10; // Tamaño de la página
+    const pageSize = parseInt(req.query.pageSize) || 30; // Tamaño de la página
 
     const connection = await getConnection();
     const offset = (page - 1) * pageSize;
@@ -164,7 +164,7 @@ const getUserById = async (req, res) =>{
     const id = req.params.id;
     const connection = await getConnection();
     
-    const  data = await connection.query('SELECT FirstNames_user AS Names, LastNames_user AS LastNames, Email_user AS Email, ImgProfile_user AS Img FROM User WHERE Id_user = ?',[id] )
+    const  data = await connection.query('SELECT FirstNames_user AS Names, LastNames_user AS LastNames, Email_user AS Email, ImgProfile_user AS Img FROM User   WHERE Id_user = ?',[id] )
     if(data.length === 0){
       res.status(404).json({ message: 'No data found for this specific user' });
     }else{

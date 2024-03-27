@@ -88,7 +88,6 @@ const login = async (req, res) => {
                 return res.status(200).json({
                     status: 200,
                     message: 'Inicio de sesión exitoso.',
-                    user: fetchdata ,
                     token: tokenSession,
                 });
             }
