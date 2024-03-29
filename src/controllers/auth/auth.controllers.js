@@ -61,7 +61,7 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body;
         const connection = await getConnection();
-        const results = await connection.query('SELECT  u.Id_user, u.Password_user, r.Name_rol AS Rol  FROM  User u JOIN Rol r ON u.Id_user = r.Id_user_FK   WHERE u.Email_user = ?', [email]);
+        const results = await connection.query('SELECT  u.Id_user, u.FirstNames_user AS Nombres , u.LastNames_user AS Apellidos, u.Email_user AS Email,  u.Password_user, u.ImgProfile_user AS Img, r.Name_rol AS Rol  FROM  User u JOIN Rol r ON u.Id_user = r.Id_user_FK   WHERE u.Email_user = ?', [email]);
 
         if (results.length === 0) {
             return res.status(409).json({

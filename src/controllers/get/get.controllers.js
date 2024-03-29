@@ -57,6 +57,7 @@ const getAllProducts = async (req, res) => {
     // Consulta para obtener los productos con paginación
     const data = await connection.query(
       `SELECT 
+      
         Product.Id_prod AS Id,
         Product.Name_prod AS Name,
         Product.Description_prod AS Description,
@@ -64,11 +65,16 @@ const getAllProducts = async (req, res) => {
         Product.Img_prod AS Img,
         Product.Status_prod AS Status,
         Product.DateCreated_prod,
+        User.FirstNames_user AS NameArtist,
         Category.Name_catg AS Category
       FROM 
         Product
       INNER JOIN 
         Category ON Product.Id_catg_FK = Category.Id_catg
+      INNER JOIN 
+        User_Prod ON Product.Id_prod = User_Prod.Id_p_fk
+      INNER JOIN 
+        User ON User_Prod.Id_u_fk = User.Id_user
       LIMIT ? OFFSET ?`,
       [pageSize, offset]
     );
