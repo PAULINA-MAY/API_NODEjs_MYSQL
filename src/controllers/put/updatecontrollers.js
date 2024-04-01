@@ -82,6 +82,8 @@ const updateRolUserById = async (req, res) =>{
 
 
 
+
+
 export const  putMethods ={
 
     updateCategoryById,

@@ -17,4 +17,5 @@ router.put('/putRolUserById/:id', checkAuth, putMethods.updateRolUserById)
 
 
 
+
 export default router;

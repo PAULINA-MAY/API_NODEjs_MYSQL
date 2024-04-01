@@ -2,6 +2,12 @@ import { getConnection } from "../../database/database"
 import { tokenSing } from "../../helpers/generateToken";
 import { encrypt, compare} from "../../helpers/handleBcrypt";
 
+export const blacklist = [];
+
+
+
+
+
 
 const registerUser = async (req, res) => {
     try {
@@ -79,6 +85,7 @@ const login = async (req, res) => {
             } else {
               
                 const tokenSession = await tokenSing(user);
+                res.cookie('token', tokenSession, { httpOnly: true });
 
                 const fetchdata = results.map(user => {
                     const { Password_user, ...userData } = user; // Excluir el campo Password_user
@@ -100,8 +107,41 @@ const login = async (req, res) => {
 
 
 
+const logout = async (req, res) =>{
+   try {
+    const token = req.headers['authorization'].split(' ');
+   
+    if (blacklist.includes(token[1])) {
+          const tokendfind = blacklist.includes(token[1]);
+          console.log("Este es el token encontrado en blaclist", tokendfind); 
+          res.status(401).json({ error: 'You do not have session' });
+          return;
+      }else{
+        res.cookie('token', { expires: new Date(0) });
+        console.log(token[1])
+        blacklist.push(token[1]);
+        
+        res.status(200).json({ message: 'Logout exitoso' });
+
+      }
+
+
+
+    
+   } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Error interno del servidor.' });
+    
+   }
+}
+
+
+
+
+
 
 export const methods= {
     registerUser,
-    login 
+    login,
+    logout
 }

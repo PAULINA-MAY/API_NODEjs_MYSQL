@@ -11,10 +11,10 @@ const tokenSing = async (results) =>{
             _nombres : results.Nombres,
             _apellidos : results.Apellidos,
          },
-         config.jwt_secret,
+         config.jwt_secret ,
          {
-            expiresIn: "2h"
-         }
+            expiresIn: "5h"
+         } 
     );
 };
 const verifyToken = async ( token)  =>{
@@ -28,4 +28,7 @@ const verifyToken = async ( token)  =>{
    }
    
 }
+
+
+
 module.exports = {tokenSing, verifyToken }
