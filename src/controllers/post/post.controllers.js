@@ -153,14 +153,15 @@ const postFavorite = async (req, res) => {
         const connection = await getConnection();
         
         // Verificar si el producto ya está en favoritos
-        const existFavorite = await connection.query('SELECT * FROM Favorites WHERE Id_FKprod = ?', [idArt]);
+        const existFavorite = await connection.query('SELECT Id_favorites AS Id , Name_prod AS NameProduct, Description_prod  AS Description, Price_Prod AS Price , 	Img_prod  FROM Favorites INNER JOIN  Product  ON  Id_FKprod  =   Id_prod  WHERE Id_FKuser = ? AND Id_FKprod = ?', [idUser, idArt]);
+        
+        // Si ya existe el producto en favoritos, enviar una respuesta 409 (Conflict)
         if (existFavorite.length > 0) {
-            return res.status(406).json({ message: 'The favorite product already exists' });
+            return res.status(409).json({ message: 'The favorite product already exists' });
         } 
         
-      
         try {
-             await connection.query('INSERT INTO Favorites SET ?', {
+            await connection.query('INSERT INTO Favorites SET ?', {
                 Id_FKuser: idUser,
                 Id_FKprod: idArt
             });
@@ -175,7 +176,7 @@ const postFavorite = async (req, res) => {
             if (error.code === 'ER_NO_REFERENCED_ROW') {
                 return res.status(404).json({ message: 'User not found' });
             } else {
-                return res.status(409).json({ message: 'The user or product does not exist' });
+                return res.status(404).json({ message: 'The user or product does not exist' });
             }
         }
 
@@ -184,6 +185,7 @@ const postFavorite = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 const postAddShoppingCart = async (req, res) => {
     try {
@@ -228,6 +230,7 @@ const postAddShoppingCart = async (req, res) => {
         res.status(500).json({ message: 'Internal Server Error' });
     } 
 }
+
 const postbuy = async (req, res) => {
     try {
         const idUser = req.params.idUser;
