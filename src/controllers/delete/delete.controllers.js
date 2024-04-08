@@ -135,12 +135,46 @@ const deleteShoppingCartById = async (req, res) => {
        }
 };
 
+const deleteCategoryById = async (req, res) =>{
+       try {
+              const id = req.params.id;
+              const connection = await getConnection();
+              const exist = await connection.query('SELECT * FROM Category WHERE Id_catg= ?', [id]);
+              if(exist.length=== 0){
+                     res.send(
+                            {
+                                success: false,
+                                message: 'No data found for the specified Category',
+                                status : 409
+                            }
+                         )
+              }else{
+                     connection.query('DELETE FROM Category WHERE Id_catg = ?', [id])
+                     res.send({
+                            message : 'The category  has been deleted',
+                            success : true,
+                            status : 200
+                     })
+
+              }
+              
+       } catch (error) {
+              console.log(error)
+              res.status(500).json({ message: 'Internal Server Error' });  
+              
+       }
+
+   
+};
+
 
 
 export const deleteMethods={
        deleteUserById,
        deleteProductById,
        deleteFavoritesById,
-       deleteShoppingCartById
+       deleteShoppingCartById,
+       deleteCategoryById ,
+       deleteCategoryById 
    
    }

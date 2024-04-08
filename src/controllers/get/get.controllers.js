@@ -7,7 +7,9 @@ const getUsers = async (req , res) =>{
     const page = req.query.page || 1;
     const limit = req.query.limit || 10;
     const offset = (page - 1) * limit;
-    const data = await connection.query(`SELECT  Id_user, FirstNames_user, LastNames_user, Email_user , ImgProfile_user , DateCreated_user FROM user LIMIT ${limit} OFFSET ${offset}`);
+    const rol = "user"
+    const data = await connection.query(`SELECT  Id_user AS Id, FirstNames_user, LastNames_user, Email_user , ImgProfile_user , DateCreated_user, DateModified_user FROM user JOIN 
+    Rol  ON  Id_user =  Id_user_FK   WHERE  Name_rol = ?  LIMIT ${limit} OFFSET ${offset}`, [rol]);
     const totalPageData = await connection.query(`SELECT COUNT(*) as count  FROM User `);
     const  totalPage = Math.ceil(totalPageData[0].count /limit);
 

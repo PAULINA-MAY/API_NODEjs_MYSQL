@@ -16,6 +16,9 @@ router.delete("/deleteFavoriteById/:id", checkAuth, deleteMethods.deleteFavorite
 //ROUTES SHOPPING CART
 router.delete("/deleteShoppingCartById/:id", checkAuth, deleteMethods.deleteShoppingCartById)
 
+//ROUTES CATEGORY
+router.delete("/deleteCategoryById/:id", checkAuth, deleteMethods.deleteCategoryById)
+
 
 
 
