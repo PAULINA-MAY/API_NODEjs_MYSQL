@@ -9,7 +9,7 @@ const sendEmail = async (email, description, totalPrice) => {
             secure: true,
             auth: {
                 user: "feripau230@gmail.com",
-                pass: "grxstizgsuiectdi"
+                pass: "hyehufzitoquzydc"
             }
         };
         const transporter = nodemailer.createTransport(config);
