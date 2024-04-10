@@ -17,7 +17,7 @@ router.get("/getArtByIdUser/:id", checkAuth, getMethods.getProdByIdUser)
 router.get("/getArtById/:id",  checkAuth, getMethods.getArtById)
 
 //ENDPOINT PARA  OBTENER DATOS DE TODOS LOS RPODUCTOS
-router.get("/getAllProducts",  getMethods.getAllProducts)
+router.get("/getAllProducts", getMethods.getAllProducts)
 
 //FAVORITES
 //ENDPOINT PARA OBTENER LOS PRODUCTOS FAVORITOS DE UN ESPECIFICO USUARIO
@@ -29,7 +29,9 @@ router.get("/getShoppingCartById/:id", checkAuth, getMethods.getCartByIdUser)
 
 //CATEGORIES
  //ENDPOINT PARA OBTENER TODAS LAS CATEGORIAS 
- router.get("/getAllCategories",  getMethods.getAllCategories)
+ router.get("/getAllCategories", getMethods.getAllCategories)
+
+
 
 
 

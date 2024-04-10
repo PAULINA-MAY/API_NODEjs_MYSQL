@@ -278,6 +278,8 @@ const getFavoritesByUserId= async (req, res) =>{
 
 
 
+
+
 export const getMethods={
     getUsers,
     getProdByIdUser,
@@ -286,7 +288,8 @@ export const getMethods={
     getCartByIdUser,
     getArtById ,
     getAllCategories ,
-    getUserById
+    getUserById,
+    getSalesPerMonth 
 
 
 }

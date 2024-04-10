@@ -234,53 +234,53 @@ const postAddShoppingCart = async (req, res) => {
 const postbuy = async (req, res) => {
     try {
         const idUser = req.params.idUser;
-        const {  descripcion,precioTotal ,tipoMoneda, status, fecha  } = req.body ;
+        const { descripcion, precioTotal, tipoMoneda, status, fecha } = req.body;
         const connection = await getConnection();
-
-        // Borrar todos los datos de la tabla 'shopping_cart' para este usuario
-        await connection.query('DELETE FROM Cart WHERE Id_userFK = ?', [idUser]);
 
         // Obtener información del usuario 
         const userData = await connection.query('SELECT * FROM User WHERE Id_user = ?', [idUser]);
 
         if (userData.length === 0) {
             return res.status(404).json({ message: 'No data found for this specific user' });
+        } else {
+            // Borrar todos los datos de la tabla 'shopping_cart' para este usuario
+            const deleteItemCar = await connection.query('DELETE FROM Cart WHERE Id_userFK = ?', [idUser]);
+            if (deleteItemCar.affectedRows === 0) {
+                return res.status(409).json({ message: 'Cannot delete products in the cart' });
+            } else {
+                // Insertar la compra en la tabla 'buy'
+                const addBuy = {
+                    Id_FK_user: idUser,
+                    date_create: fecha,
+                    description: descripcion,
+                    TotalPrice: precioTotal,
+                    money_Type: tipoMoneda,
+                    status: status
+                };
+
+                const data = await connection.query('INSERT INTO purchases SET ?', addBuy);
+                const sendedEmail = await sendEmail(
+                    userData[0].Email_user,
+                    descripcion,
+                    precioTotal
+                );
+
+                res.status(200).json({
+                    message: 'The buy has been payed',
+                    success: true,
+                    emailSended: sendedEmail.messageId,
+                    status: 200
+                });
+
+            }
         }
 
-        // Insertar la compra en la tabla 'buy'
-        const addBuy = {
-            Id_FK_user: idUser,
-            date_create:  fecha,
-            description : descripcion,
-            TotalPrice : precioTotal, 
-            money_Type : tipoMoneda,
-            status : status
-            
-        };
-
-              
- 
-
-        const data = await connection.query('INSERT INTO purchases SET ?', addBuy);
-        const sendedEmail = await sendEmail(
-            userData[0].Email_user,
-            descripcion,
-            precioTotal
-
-        ); 
-  
-
-        res.status(200).json({
-            message: 'The buy has been payed',
-            success: true,
-            emailSended: sendedEmail.messageId ,
-            status: 200
-        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 
 export const postMethods = {
