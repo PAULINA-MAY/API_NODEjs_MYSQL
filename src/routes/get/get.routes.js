@@ -30,9 +30,7 @@ router.get("/getShoppingCartById/:id", checkAuth, getMethods.getCartByIdUser)
 //CATEGORIES
  //ENDPOINT PARA OBTENER TODAS LAS CATEGORIAS 
  router.get("/getAllCategories", getMethods.getAllCategories)
-
-
-
+ 
 
 
 

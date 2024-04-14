@@ -288,8 +288,7 @@ export const getMethods={
     getCartByIdUser,
     getArtById ,
     getAllCategories ,
-    getUserById,
-    getSalesPerMonth 
+    getUserById
 
 
 }
