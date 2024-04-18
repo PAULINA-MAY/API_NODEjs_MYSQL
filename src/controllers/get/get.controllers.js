@@ -271,6 +271,39 @@ const getFavoritesByUserId= async (req, res) =>{
 
 }
 
+const getSalesPerMonth = async (req, res) => {
+  try {
+    const connection = await getConnection();
+
+    // Generar datos ficticios para los primeros tres meses
+    const fakeData = [
+      { month: 'January', total_sales: Math.floor(Math.random() * 100) },
+      { month: 'February', total_sales: Math.floor(Math.random() * 100) },
+      { month: 'March', total_sales: Math.floor(Math.random() * 100) }
+    ];
+
+    // Ejecutar la consulta SQL para el resto de los meses
+    const sqlQuery = "SELECT MONTHNAME(date_create) AS month, COUNT(Id_purchase) AS total_sales FROM purchases WHERE status = 'completed' AND MONTH(date_create) > 3 GROUP BY MONTH(date_create) ORDER BY MONTH(date_create)";
+    const data = await connection.query(sqlQuery);
+
+    // Combinar los datos ficticios con los datos de la base de datos
+    const combinedData = [...fakeData, ...data];
+
+    if (combinedData.length === 0) {
+      res.status(409).json({ message: 'There is no data recorded yet' });
+    } else {
+      res.send({
+        data: combinedData,
+        success: true,
+        status: 200
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
 
 
 
@@ -288,7 +321,8 @@ export const getMethods={
     getCartByIdUser,
     getArtById ,
     getAllCategories ,
-    getUserById
+    getUserById,
+    getSalesPerMonth 
 
 
 }
