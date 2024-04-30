@@ -1,7 +1,8 @@
 import { getConnection } from "../../database/database"
 import { tokenSing } from "../../helpers/generateToken";
 import { encrypt, compare} from "../../helpers/handleBcrypt";
-
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 export const blacklist = [];
 
 
@@ -12,53 +13,47 @@ export const blacklist = [];
 const registerUser = async (req, res) => {
     try {
         const { firstNames, lastNames, password, email } = req.body;
-        const connection = await getConnection();
         const passwordHash = await encrypt(password);
         const defaultImage = 'https://res.cloudinary.com/ddfdcx85l/image/upload/v1708497453/ugbw6xdzxrxhqvzpdtfe.jpg';
 
-        // Insertar el nuevo usuario
-        const newUser = {
-            FirstNames_user: firstNames,
-            LastNames_user: lastNames,
-            Email_user: email,
-            Password_user: passwordHash,
-            ImgProfile_user: defaultImage
-        };
+        // Insertar el nuevo usuario y el rol asociado
+        const newUser = await prisma.user.create({
+            data: {
+                FirstNames_user: firstNames,
+                LastNames_user: lastNames,
+                Email_user: email,
+                Password_user: passwordHash,
+                ImgProfile_user: defaultImage,
+                rol: {
+                    create: {
+                        Name_rol: 'user'
+                    }
+                }
+            },
+            include: {
+                rol: true
+            }
+        });
 
-        const insertedUser = await connection.query('INSERT INTO User SET ?', newUser);
-
-        if (insertedUser.affectedRows === 0) {
+        // Si no se pudo insertar el usuario o el rol, enviar un mensaje de error
+        if (!newUser) {
             return res.status(401).send({
-                message: 'The user has not been inserted',
+                message: 'The user or role has not been inserted',
                 status: 401
             });
         }
 
-        // Obtener el Id_user del usuario recién insertado
-        const userId = insertedUser.insertId; // Usar 'insertId' en lugar de 'Id_user'
-
-        // Insertar el rol 'user' asociado al usuario en la tabla Rol
-        const insertedRol = await connection.query('INSERT INTO Rol (Name_rol, Id_user_FK) VALUES (?, ?)', ['user', userId]);
-
-        if (insertedRol.affectedRows === 0) {
-            // Si no se pudo insertar el rol, eliminar el usuario previamente insertado y enviar un mensaje de error
-            await connection.query('DELETE FROM User WHERE Id_user = ?', [userId]);
-            return res.status(401).send({
-                message: 'The role has not been inserted',
-                status: 401
-            });
-        }
-
-        // Ambos usuario y rol se han insertado correctamente
+        // Usuario y rol insertados correctamente
         res.send({
             message: 'User and role have been inserted successfully',
             status: 200
         });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 
 
 

@@ -4,11 +4,36 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
 generator client {
   provider = "prisma-client-js"
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+
+model User {
+  Id_user          Int      @id @default(autoincrement())
+  FirstNames_user  String
+  LastNames_user   String
+  Email_user       String
+  Password_user    String
+  ImgProfile_user  String
+  DateCreated_user DateTime @default(now())
+  DateModified_user DateTime @updatedAt
+
+  // Define la relación con la tabla Rol
+  rol              Rol?    // Un usuario puede tener un rol (opcional)
 }
+
+model Rol {
+  Id_rol      Int     @id @default(autoincrement())
+  Id_user_FK  Int     @unique
+  Name_rol    String  @default("user")
+
+  // Define la relación con la tabla User
+  user        User    @relation(fields: [Id_user_FK], references: [Id_user])
+}
+

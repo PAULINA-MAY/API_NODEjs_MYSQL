@@ -9,5 +9,6 @@ export default {
     port : process.env.DB_PORT || "",
     serverport : process.env.SERVER_PORT || "",
     password : process.env.PASSWORD ,
-    jwt_secret :  process.env.JWT_SECRET || ""
+    jwt_secret :  process.env.JWT_SECRET || "",
+
 }

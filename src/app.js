@@ -3,6 +3,7 @@ import morgan from "morgan";
 import config from './config'
 var cors = require('cors')
 
+
 //ROUTES
 import auth from './routes/auth/auth.routes'
 import get from  './routes/get/get.routes'
@@ -27,9 +28,9 @@ app.use("/api/post", post);
 app.use("/api/delete", deleted);
 app.use("/api/put", update) ;
 
-///Route ViewImages
-app.use("/public", express.static('C:/Home/API-PROYECTO/src/images'))
-app.use("/defaultprofile", express.static('C:/Home/API-PROYECTO/src/images/DefaultProfile'))
+
+
+
 
 
 
